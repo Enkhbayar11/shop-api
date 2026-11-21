@@ -1,5 +1,8 @@
 import 'dotenv/config';
+import { readFileSync } from 'node:fs';
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yaml';
 import { logger } from './middleware/logger.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -9,8 +12,10 @@ import productRoutes from './routes/productRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 
 const app = express();
+const openapi = YAML.parse(readFileSync(new URL('../openapi.yaml', import.meta.url), 'utf8'));
 
 app.use(logger);
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
 app.use(express.json());
 
 app.get('/health', (req, res) => {
