@@ -1,0 +1,63 @@
+// Сэдэв: Дэлгүүр (кодын сүүлийн цифр 6)
+// A = Category, D = Brand, B = Product, C = Review
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// A — Ангилал
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+// D — Брэнд
+model Brand {
+  id          Int       @id @default(autoincrement())
+  name        String
+  foundedYear Int?
+  createdAt   DateTime  @default(now())
+  products    Product[]
+}
+
+// B — Бараа (хоёр foreign key: categoryId, brandId)
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  releaseYear Int
+  price       Int // төгрөгөөр
+  description String?
+  isAvailable Boolean  @default(true)
+  categoryId  Int
+  brandId     Int?
+  createdAt   DateTime @default(now())
+
+  // Ангилалд бараа байвал ангиллыг устгахгүй
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  // Брэнд устахад бараа үлдэнэ, brandId нь null болно
+  brand    Brand?   @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  reviews  Review[]
+}
+
+// C — Сэтгэгдэл
+model Review {
+  id         Int      @id @default(autoincrement())
+  rating     Int
+  comment    String?
+  authorName String
+  productId  Int
+  createdAt  DateTime @default(now())
+
+  // Бараа устахад сэтгэгдлүүд нь хамт устна
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Нэг хүн нэг бараанд нэг л удаа сэтгэгдэл бичнэ (database-ийн түвшинд)
+  @@unique([productId, authorName])
+}
