@@ -30,9 +30,9 @@ export function errorHandler(err, req, res, next) {
         return send(res, 404, 'Бичлэг олдсонгүй');
       case 'P2003': {
         // Foreign key зөрчигдсөн
-        const field = fkField(err.meta?.field_name);
+        const field = fkField(err.meta?.constraint ?? err.meta?.field_name);
         if (req.method === 'DELETE') {
-          // onDelete: Restrict — холбоотой бичлэг байгаа тул устгахгүй
+          // onDelete: NoAction — холбоотой бичлэг байгаа тул устгахгүй
           return send(res, 409, 'Холбоотой бичлэгүүд байгаа тул устгах боломжгүй');
         }
         // POST/PATCH дээр байхгүй id заасан

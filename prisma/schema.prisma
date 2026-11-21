@@ -39,8 +39,10 @@ model Product {
   brandId     Int?
   createdAt   DateTime @default(now())
 
-  // Ангилалд бараа байвал ангиллыг устгахгүй
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  // Ангилалд бараа байвал ангиллыг устгахгүй.
+  // NoAction: PostgreSQL foreign key алдаа (23503) өгч, Prisma үүнийг P2003 болгоно.
+  // (Restrict нь PostgreSQL дээр 23001 өгдөг бөгөөд Prisma танихгүй 500 болдог.)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
   // Брэнд устахад бараа үлдэнэ, brandId нь null болно
   brand    Brand?   @relation(fields: [brandId], references: [id], onDelete: SetNull)
   reviews  Review[]
