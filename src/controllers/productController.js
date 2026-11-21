@@ -16,10 +16,15 @@ export const productInclude = {
 };
 
 const SORT_FIELDS = ['name', 'price', 'releaseYear', 'createdAt'];
+const LIST_PARAMS = [
+  'q', 'categoryId', 'brandId', 'hasBrand', 'minPrice', 'maxPrice',
+  'isAvailable', 'minRating', 'sort', 'order',
+];
 
 // GET /products — шүүлтүүр, эрэмбэ, хуудаслалт хамт ажиллана.
 export async function listProducts(req, res) {
   const q = req.query;
+  const pg = parsePagination(q, LIST_PARAMS); // мэдэгдэхгүй параметр байвал 400
   const where = {};
 
   // q — нэр эсвэл тайлбарт агуулагдсан (том жижиг үсэг ялгахгүй)
@@ -70,7 +75,6 @@ export async function listProducts(req, res) {
 
   const sort = parseEnumParam(q, 'sort', SORT_FIELDS, 'createdAt');
   const order = parseEnumParam(q, 'order', ['asc', 'desc'], 'desc');
-  const pg = parsePagination(q);
 
   const [data, total] = await Promise.all([
     prisma.product.findMany({
@@ -132,9 +136,9 @@ export async function deleteProduct(req, res) {
 
 // GET /products/:id/reviews — rating эсвэл createdAt-аар эрэмбэлнэ
 export async function listProductReviews(req, res) {
+  const pg = parsePagination(req.query, ['sort', 'order']);
   const sort = parseEnumParam(req.query, 'sort', ['rating', 'createdAt'], 'createdAt');
   const order = parseEnumParam(req.query, 'order', ['asc', 'desc'], 'desc');
-  const pg = parsePagination(req.query);
 
   const exists = await prisma.product.findUnique({ where: { id: req.id }, select: { id: true } });
   if (!exists) throw notFound('Бараа олдсонгүй');

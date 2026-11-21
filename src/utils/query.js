@@ -2,6 +2,13 @@ import { badRequest } from './httpError.js';
 
 const INT_MAX = 2147483647;
 
+// Мэдэгдэхгүй query параметр ирвэл (жишээ нь ?sortt=name) чимээгүй алгасахгүй, 400.
+export function allowOnly(query, names) {
+  for (const key of Object.keys(query)) {
+    if (!names.includes(key)) throw badRequest(`'${key}' гэсэн параметр байхгүй`, key);
+  }
+}
+
 // Query-ийн нэг параметрийг авна. ?page=1&page=2 гэх мэт давхардсан бол 400.
 export function getParam(query, name) {
   const value = query[name];
@@ -39,8 +46,10 @@ export function parseEnumParam(query, name, allowed, defaultValue) {
   return raw;
 }
 
-// page (≥1), limit (1–50, анхдагч 10)
-export function parsePagination(query) {
+// page (≥1), limit (1–50, анхдагч 10).
+// extra — page, limit-ээс гадна зөвшөөрөх параметрүүд.
+export function parsePagination(query, extra = []) {
+  allowOnly(query, ['page', 'limit', ...extra]);
   const page = parseIntParam(query, 'page', { min: 1 }) ?? 1;
   const limit = parseIntParam(query, 'limit', { min: 1, max: 50 }) ?? 10;
   return { page, limit, skip: (page - 1) * limit };
