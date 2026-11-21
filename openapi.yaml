@@ -1,0 +1,598 @@
+openapi: 3.0.3
+info:
+  title: Shop API
+  version: 1.0.0
+  description: |
+    BED411 бие даалт — Дэлгүүрийн backend API.
+    Category (A) → Product (B) → Review (C), Brand (D) → Product (B).
+
+    Алдааны хариу бүгд `{ "message": "...", "field": "..." }` хэлбэртэй.
+    `field` нь зөвхөн тодорхой талбартай холбоотой алдаанд ирнэ.
+servers:
+  - url: /
+tags:
+  - name: Categories
+    description: Ангилал (A)
+  - name: Brands
+    description: Брэнд (D)
+  - name: Products
+    description: Бараа (B)
+  - name: Reviews
+    description: Сэтгэгдэл (C)
+
+paths:
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Ангиллын жагсаалт (хуудаслалттай)
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Categories]
+      summary: Ангилал нэмэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryInput' }
+            example: { name: Таблет }
+      responses:
+        '201':
+          description: Үүссэн
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Categories]
+      summary: Нэг ангилал (барааны тоотой)
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Categories]
+      summary: Ангилал засах
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryUpdate' }
+            example: { name: Таблет компьютер }
+      responses:
+        '200':
+          description: Засагдсан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Categories]
+      summary: Ангилал устгах (бараатай бол 409)
+      responses:
+        '204': { description: Устгагдсан }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /categories/{id}/products:
+    get:
+      tags: [Categories]
+      summary: Тухайн ангиллын бараанууд (хуудаслалттай)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /brands:
+    get:
+      tags: [Brands]
+      summary: Брэндийн жагсаалт (хуудаслалттай)
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BrandList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Brands]
+      summary: Брэнд нэмэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BrandInput' }
+            example: { name: Asus, foundedYear: 1989 }
+      responses:
+        '201':
+          description: Үүссэн
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Brand' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /brands/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Brands]
+      summary: Нэг брэнд (барааны тоотой)
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BrandDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Brands]
+      summary: Брэнд засах
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BrandUpdate' }
+            example: { foundedYear: 1990 }
+      responses:
+        '200':
+          description: Засагдсан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Brand' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Brands]
+      summary: Брэнд устгах (бараанууд үлдэж brandId нь null болно)
+      responses:
+        '204': { description: Устгагдсан }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /brands/{id}/products:
+    get:
+      tags: [Brands]
+      summary: Тухайн брэндийн бараанууд (хуудаслалттай)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /products:
+    get:
+      tags: [Products]
+      summary: Барааны жагсаалт — шүүлтүүр, эрэмбэ, хуудаслалт
+      description: Бүх параметрийг хамт хэрэглэж болно. Буруу утга эсвэл мэдэгдэхгүй параметр ирвэл 400.
+      parameters:
+        - name: q
+          in: query
+          description: Нэр эсвэл тайлбарт агуулагдсан (том жижиг үсэг ялгахгүй)
+          schema: { type: string, example: galaxy }
+        - name: categoryId
+          in: query
+          schema: { type: integer, minimum: 1, example: 1 }
+        - name: brandId
+          in: query
+          schema: { type: integer, minimum: 1, example: 2 }
+        - name: hasBrand
+          in: query
+          description: false бол брэндгүй бараанууд
+          schema: { type: string, enum: ['true', 'false'] }
+        - name: minPrice
+          in: query
+          schema: { type: integer, minimum: 0, example: 100000 }
+        - name: maxPrice
+          in: query
+          description: minPrice нь maxPrice-аас их бол 400
+          schema: { type: integer, minimum: 0, example: 3000000 }
+        - name: isAvailable
+          in: query
+          schema: { type: string, enum: ['true', 'false'] }
+        - name: minRating
+          in: query
+          description: Дундаж үнэлгээ нь энэ утгаас багагүй (нэмэлт даалгавар)
+          schema: { type: integer, minimum: 1, maximum: 5 }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [name, price, releaseYear, createdAt], default: createdAt }
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Амжилттай. total нь шүүлтүүрийн дараах тоо.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Products]
+      summary: Бараа нэмэх (байхгүй categoryId, brandId бол 400)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+            example:
+              name: iPad Air M2
+              releaseYear: 2024
+              price: 2590000
+              description: 11 инч, M2 чиптэй таблет
+              isAvailable: true
+              categoryId: 1
+              brandId: 1
+      responses:
+        '201':
+          description: Үүссэн
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /products/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Products]
+      summary: Нэг бараа (ангилал, брэнд, сэтгэгдлийн тоо, дундаж үнэлгээтэй)
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Products]
+      summary: Бараа засах (зөвхөн ирсэн талбаруудыг шалгана)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductUpdate' }
+            example: { price: 2490000, isAvailable: false }
+      responses:
+        '200':
+          description: Засагдсан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Products]
+      summary: Бараа устгах (сэтгэгдлүүд нь хамт устна)
+      responses:
+        '204': { description: Устгагдсан }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /products/{id}/reviews:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Reviews]
+      summary: Барааны сэтгэгдлүүд (хуудаслалттай, эрэмбэлэх боломжтой)
+      parameters:
+        - name: sort
+          in: query
+          schema: { type: string, enum: [rating, createdAt], default: createdAt }
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Reviews]
+      summary: Сэтгэгдэл бичих (нэг хүн нэг бараанд нэг удаа, давхцвал 409)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewInput' }
+            example: { rating: 5, comment: Маш сайн бараа, authorName: Болд }
+      responses:
+        '201':
+          description: Үүссэн
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /reviews/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Reviews]
+      summary: Сэтгэгдэл засах (зөвхөн rating, comment)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewUpdate' }
+            example: { rating: 4, comment: Хэдэн сарын дараа ч сайн ажиллаж байна }
+      responses:
+        '200':
+          description: Засагдсан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Reviews]
+      summary: Сэтгэгдэл устгах
+      responses:
+        '204': { description: Устгагдсан }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      description: Эерэг бүхэл тоо. Тоо биш бол 400.
+      schema: { type: integer, minimum: 1, example: 1 }
+    Page:
+      name: page
+      in: query
+      description: Хуудасны дугаар (1-ээс эхэлнэ)
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      description: Нэг хуудсанд хэдэн бичлэг (1–50)
+      schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+    Order:
+      name: order
+      in: query
+      schema: { type: string, enum: [asc, desc], default: desc }
+
+  responses:
+    BadRequest:
+      description: Буруу хүсэлт (шалгалтын алдаа)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: rating 5-ээс их байж болохгүй, field: rating }
+    NotFound:
+      description: Олдсонгүй
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: Бичлэг олдсонгүй }
+    Conflict:
+      description: Давхцал эсвэл холбоотой бичлэгтэй
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: Ийм утгатай бичлэг аль хэдийн байна, field: name }
+
+  schemas:
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        field: { type: string, description: Зөвхөн талбартай холбоотой алдаанд }
+
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        limit: { type: integer, example: 10 }
+        total: { type: integer, example: 25 }
+        pages: { type: integer, example: 3 }
+
+    Category:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Ухаалаг утас }
+        createdAt: { type: string, format: date-time }
+    CategoryDetail:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+        - type: object
+          properties:
+            productCount: { type: integer, example: 5 }
+    CategoryInput:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100, example: Таблет }
+    CategoryUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+
+    Brand:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Apple }
+        foundedYear: { type: integer, nullable: true, example: 1976 }
+        createdAt: { type: string, format: date-time }
+    BrandDetail:
+      allOf:
+        - $ref: '#/components/schemas/Brand'
+        - type: object
+          properties:
+            productCount: { type: integer, example: 5 }
+    BrandInput:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100, example: Asus }
+        foundedYear: { type: integer, nullable: true, minimum: 1800, example: 1989 }
+    BrandUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        foundedYear: { type: integer, nullable: true, minimum: 1800 }
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: iPhone 15 Pro }
+        releaseYear: { type: integer, example: 2023 }
+        price: { type: integer, description: Төгрөгөөр, example: 4299000 }
+        description: { type: string, nullable: true, example: 'A17 Pro чип, титан их бие' }
+        isAvailable: { type: boolean, example: true }
+        categoryId: { type: integer, example: 1 }
+        brandId: { type: integer, nullable: true, example: 1 }
+        createdAt: { type: string, format: date-time }
+        category:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+        brand:
+          type: object
+          nullable: true
+          properties:
+            id: { type: integer }
+            name: { type: string }
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            reviewCount: { type: integer, example: 3 }
+            averageRating: { type: number, nullable: true, example: 4.33 }
+    ProductInput:
+      type: object
+      additionalProperties: false
+      required: [name, releaseYear, price, categoryId]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        releaseYear: { type: integer, minimum: 1900, description: 1900-аас ирэх оны хооронд }
+        price: { type: integer, minimum: 1 }
+        description: { type: string, nullable: true, maxLength: 2000 }
+        isAvailable: { type: boolean, default: true }
+        categoryId: { type: integer, minimum: 1 }
+        brandId: { type: integer, nullable: true, minimum: 1 }
+    ProductUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        releaseYear: { type: integer, minimum: 1900 }
+        price: { type: integer, minimum: 1 }
+        description: { type: string, nullable: true, maxLength: 2000 }
+        isAvailable: { type: boolean }
+        categoryId: { type: integer, minimum: 1 }
+        brandId: { type: integer, nullable: true, minimum: 1 }
+
+    Review:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        rating: { type: integer, minimum: 1, maximum: 5, example: 5 }
+        comment: { type: string, nullable: true, example: Маш сайн бараа }
+        authorName: { type: string, example: Болд }
+        productId: { type: integer, example: 1 }
+        createdAt: { type: string, format: date-time }
+    ReviewInput:
+      type: object
+      additionalProperties: false
+      required: [rating, authorName]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, nullable: true, maxLength: 1000 }
+        authorName: { type: string, minLength: 1, maxLength: 100 }
+    ReviewUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, nullable: true, maxLength: 1000 }
+
+    CategoryList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Category' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    BrandList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Brand' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    ProductList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Product' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    ReviewList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Review' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
