@@ -23,7 +23,13 @@ export function parseIntParam(query, name, { min = 1, max = INT_MAX } = {}) {
   if (raw === undefined) return undefined;
   if (!/^-?\d+$/.test(raw)) throw badRequest(`${name} бүхэл тоо байх ёстой`, name);
   const n = Number(raw);
-  if (n < min || n > max) throw badRequest(`${name} ${min}–${max} хооронд байх ёстой`, name);
+  // Дээд хязгаар нь зөвхөн database-ийн Int-ийн хязгаар бол хэрэглэгчид харуулахгүй
+  if (max === INT_MAX) {
+    if (n < min) throw badRequest(`${name} ${min}-ээс бага байж болохгүй`, name);
+    if (n > max) throw badRequest(`${name} хэт том тоо байна`, name);
+  } else if (n < min || n > max) {
+    throw badRequest(`${name} ${min}–${max} хооронд байх ёстой`, name);
+  }
   return n;
 }
 
